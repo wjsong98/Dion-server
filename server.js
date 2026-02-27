@@ -30,9 +30,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("reply_time", (data) => {
-    console.log(`[싱크응답] 시간 ${data.time} → ${data.requesterId}에게 전달`);
-    io.to(data.requesterId).emit("sync_on_join", { time: data.time });
-  });
+  console.log(`[싱크응답] 시간 ${data.time} → ${data.requesterId}에게 전달`);
+  io.to(data.requesterId).emit("sync_on_join", { time: data.time, isPlaying: data.isPlaying });
+});
 
   socket.on("sync_action", (data) => {
     socket.to(data.room).emit("perform_action", { ...data, nickname: socket.data.nickname });
