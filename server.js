@@ -10,9 +10,24 @@ const roomUsers = {}; // 방별 접속자 관리
 
 io.on("connection", (socket) => {
   socket.on("join_room", ({ room, nickname }) => {
-    socket.join(room);
-    socket.data.room = room;
-    socket.data.nickname = nickname;
+  socket.join(room);
+  socket.data.room = room;
+  socket.data.nickname = nickname;
+
+  console.log(`[입장] ${nickname} → 방: ${room} | 현재 접속자: ${JSON.stringify(roomUsers[room] || [])}`);
+
+  if (roomUsers[room] && roomUsers[room].length > 0) {
+    const leader = roomUsers[room][0].id;
+    console.log(`[싱크요청] ${nickname}에게 시간 요청 → 리더: ${leader}`);
+    io.to(leader).emit("request_time", { requesterId: socket.id });
+  }
+
+  if (!roomUsers[room]) roomUsers[room] = [];
+  roomUsers[room].push({ id: socket.id, nickname: nickname });
+
+  io.to(room).emit("user_list_update", roomUsers[room]);
+  io.to(room).emit("log_message", { text: `👋 ${nickname}님이 입장했습니다.` });
+});
 
     // 기존 접속자가 있다면 "현재 시간 알려줘" 요청
     if (roomUsers[room] && roomUsers[room].length > 0) {
